@@ -13,10 +13,10 @@ import (
 func main() {
 	cc, err := contractapi.NewChaincode(&chaincode.SmartContract{})
 	if err != nil {
-		log.Panicf("Error creating asset-transfer-basic chaincode: %v", err)
+		log.Panicf("Error creating chaincode: %v", err)
 	}
 
 	if err := cc.Start(); err != nil {
-		log.Panicf("Error starting asset-transfer-basic chaincode: %v", err)
+		log.Panicf("Error starting chaincode: %v", err)
 	}
 }
