@@ -2,6 +2,7 @@ package chaincode
 
 import (
 	"encoding/json"
+	"encoding/base64"
 	"fmt"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
@@ -110,7 +111,7 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 	return nil
 }
 
-func (s *SmartContract) CreateAsset(ctx contractapi.TransactionContextInterface, id string, start int, end int, amount int) error {
+func (s *SmartContract) IssueAsset(ctx contractapi.TransactionContextInterface, id string, start int, end int, amount int) error {
 	exists, err := s.AssetExists(ctx, id)
 	if err != nil {
 		return err
@@ -206,20 +207,20 @@ func (s *SmartContract) AssetExists(ctx contractapi.TransactionContextInterface,
 	return assetJSON != nil, nil
 }
 
-func (s *SmartContract) TransferAsset(ctx contractapi.TransactionContextInterface, id string, newOwner string) error {
-	asset, err := s.ReadAsset(ctx, id)
-	if err != nil {
-		return err
-	}
+// func (s *SmartContract) TransferAsset(ctx contractapi.TransactionContextInterface, id string, newOwner string) error {
+// 	asset, err := s.ReadAsset(ctx, id)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	asset.Owner = newOwner
-	assetJSON, err := json.Marshal(asset)
-	if err != nil {
-		return err
-	}
+// 	asset.Owner = newOwner
+// 	assetJSON, err := json.Marshal(asset)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	return ctx.GetStub().PutState(id, assetJSON)
-}
+// 	return ctx.GetStub().PutState(id, assetJSON)
+// }
 
 func (s *SmartContract) GetAllAssets(ctx contractapi.TransactionContextInterface) ([]*Asset, error) {
 
