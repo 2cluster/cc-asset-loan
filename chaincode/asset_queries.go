@@ -12,6 +12,7 @@ import (
 	"log"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
+	"github.com/hyperledger/fabric-chaincode-go/shim"
 )
 
 // ReadAsset reads the information from collection
@@ -21,7 +22,7 @@ func (s *SmartContract) ReadAsset(ctx contractapi.TransactionContextInterface, a
 	assetJSON, err := ctx.GetStub().GetPrivateData(assetCollection, assetID) //get the asset from chaincode state
 	if err != nil {
 		return nil, fmt.Errorf("failed to read asset: %v", err)
-	}
+	}	github.com/2cluster/cc-asset-loan v0.0.0-20210212153857-9c1e67367604
 
 	//No Asset found, return empty response
 	if assetJSON == nil {
@@ -116,75 +117,3 @@ func (s *SmartContract) GetAssetByRange(ctx contractapi.TransactionContextInterf
 
 }
 
-// =======Rich queries =========================================================================
-// Two examples of rich queries are provided below (parameterized query and ad hoc query).
-// Rich queries pass a query string to the state database.
-// Rich queries are only supported by state database implementations
-//  that support rich query (e.g. CouchDB).
-// The query string is in the syntax of the underlying state database.
-// With rich queries there is no guarantee that the result set hasn't changed between
-//  endorsement time and commit time, aka 'phantom reads'.
-// Therefore, rich queries should not be used in update transactions, unless the
-// application handles the possibility of result set changes between endorsement and commit time.
-// Rich queries can be used for point-in-time queries against a peer.
-// ============================================================================================
-
-// ===== Example: Parameterized rich query =================================================
-
-// QueryAssetByOwner queries for assets based on assetType, owner.
-// This is an example of a parameterized query where the query logic is baked into the chaincode,
-// and accepting a single query parameter (owner).
-// Only available on state databases that support rich query (e.g. CouchDB)
-// =========================================================================================
-func (s *SmartContract) QueryAssetByOwner(ctx contractapi.TransactionContextInterface, assetType string, owner string) ([]*Asset, error) {
-
-	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"%v\",\"owner\":\"%v\"}}", assetType, owner)
-
-	queryResults, err := s.getQueryResultForQueryString(ctx, queryString)
-	if err != nil {
-		return nil, err
-	}
-	return queryResults, nil
-}
-
-// QueryAssets uses a query string to perform a query for assets.
-// Query string matching state database syntax is passed in and executed as is.
-// Supports ad hoc queries that can be defined at runtime by the client.
-// If this is not desired, follow the QueryAssetByOwner example for parameterized queries.
-// Only available on state databases that support rich query (e.g. CouchDB)
-func (s *SmartContract) QueryAssets(ctx contractapi.TransactionContextInterface, queryString string) ([]*Asset, error) {
-
-	queryResults, err := s.getQueryResultForQueryString(ctx, queryString)
-	if err != nil {
-		return nil, err
-	}
-	return queryResults, nil
-}
-
-// getQueryResultForQueryString executes the passed in query string.
-func (s *SmartContract) getQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]*Asset, error) {
-
-	resultsIterator, err := ctx.GetStub().GetPrivateDataQueryResult(assetCollection, queryString)
-	if err != nil {
-		return nil, err
-	}
-	defer resultsIterator.Close()
-
-	results := []*Asset{}
-
-	for resultsIterator.HasNext() {
-		response, err := resultsIterator.Next()
-		if err != nil {
-			return nil, err
-		}
-		var asset *Asset
-
-		err = json.Unmarshal(response.Value, &asset)
-		if err != nil {
-			return nil, fmt.Errorf("failed to unmarshal JSON: %v", err)
-		}
-
-		results = append(results, asset)
-	}
-	return results, nil
-}
